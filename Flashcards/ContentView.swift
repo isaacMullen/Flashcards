@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  Flashcards
-//
-//  Created by Mike Mullen on 2025-08-14.
-//
-
 import SwiftUI
 
 struct Card {
@@ -19,44 +12,86 @@ struct ContentView: View {
         Card(front: "Largest planet in our solar system?", back: "Jupiter")
     ]
     
+    private let placeholderDecks = ["Math", "History", "Science"]
+
     @State private var currentIndex = 0
     @State private var isFlipped = false
+    @State private var showDeckMenu = false
+    @State private var selectedDeck = "Default Deck"
 
     var body: some View {
         ZStack {
-            // Background color for the card
-            Color.white.ignoresSafeArea() // Fill entire screen
-
+            Color.white
+                .ignoresSafeArea()
+                .contentShape(Rectangle()) // Makes the entire area tappable/swipeable
+                .gesture(
+                    DragGesture(minimumDistance: 20)
+                        .onEnded { value in
+                            let verticalAmount = value.translation.height
+                            
+                            if verticalAmount < -50 {
+                                // Swipe up
+                                nextCard()
+                            } else if verticalAmount > 50 {
+                                // Swipe down
+                                nextCard()
+                            }
+                        }
+                )
+            
             VStack {
+                HStack {
+                    Button(action: { showDeckMenu.toggle() }) {
+                        Image(systemName: "line.horizontal.3")
+                            .font(.title)
+                            .foregroundColor(.black)
+                            .padding()
+                    }
+                    Spacer()
+                }
+                
+                Text(isFlipped ? "Answer" : "Question")
+                    .font(.system(size: 21))
+
                 Spacer()
 
-                // Card text
                 Text(isFlipped ? cards[currentIndex].back : cards[currentIndex].front)
                     .font(.largeTitle)
                     .multilineTextAlignment(.center)
                     .padding()
 
                 Spacer()
+            }
 
-                // Next button
-                Button("Next Card") {
-                    withAnimation {
-                        isFlipped = false
-                        currentIndex = (currentIndex + 1) % cards.count
+            if showDeckMenu {
+                VStack(alignment: .leading, spacing: 15) {
+                    ForEach(placeholderDecks, id: \.self) { deck in
+                        Button(deck) {
+                            selectedDeck = deck
+                            showDeckMenu = false
+                            print("Selected deck: \(deck)")
+                        }
+                        .padding(5)
+                        .foregroundColor(.white)
                     }
                 }
                 .padding()
                 .background(Color.gray)
-                .foregroundColor(.white)
-                .cornerRadius(8)
-                .padding(.bottom, 40) // Keep away from edge
+                .frame(maxWidth: 200, alignment: .leading)
+                .position(x: 105, y: 115)
             }
-            .padding()
         }
         .onTapGesture {
             withAnimation {
                 isFlipped.toggle()
             }
+        }
+    }
+    
+    private func nextCard() {
+        withAnimation {
+            isFlipped = false
+            currentIndex = (currentIndex + 1) % cards.count
         }
     }
 }
