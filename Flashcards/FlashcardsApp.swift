@@ -9,6 +9,12 @@ import SwiftUI
 
 @main
 struct FlashcardsApp: App {
+
+    // Initialize the database when the app starts
+    init() {
+        _ = DatabaseManager.shared
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
