@@ -21,48 +21,55 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
+            // Full-screen swipe & tap detection
             Color.white
                 .ignoresSafeArea()
-                .contentShape(Rectangle()) // Makes the entire area tappable/swipeable
+                .contentShape(Rectangle())
                 .gesture(
                     DragGesture(minimumDistance: 20)
                         .onEnded { value in
                             let verticalAmount = value.translation.height
                             
                             if verticalAmount < -50 {
-                                // Swipe up
                                 nextCard()
                             } else if verticalAmount > 50 {
-                                // Swipe down
                                 nextCard()
                             }
                         }
                 )
+                .onTapGesture {
+                    withAnimation {
+                        isFlipped.toggle()
+                    }
+                }
             
             VStack {
-                HStack {
-                    Button(action: { showDeckMenu.toggle() }) {
-                        Image(systemName: "line.horizontal.3")
-                            .font(.title)
-                            .foregroundColor(.black)
-                            .padding()
+                // Hamburger menu + Top Text
+                ZStack {
+                    HStack {
+                        Button(action: { showDeckMenu.toggle() }) {
+                            Image(systemName: "line.horizontal.3")
+                                .font(.title)
+                                .foregroundColor(.black)
+                                .padding()
+                        }
+                        Spacer()
                     }
-                    Spacer()
+                    
+                    Text(isFlipped ? "Answer" : "Question")
+                        .font(.system(size: 21))
                 }
                 
-                Text(isFlipped ? "Answer" : "Question")
-                    .font(.system(size: 21))
+                
 
-                Spacer()
-
+                // Card text (no gesture here, so it doesn't block the background one)
                 Text(isFlipped ? cards[currentIndex].back : cards[currentIndex].front)
                     .font(.largeTitle)
                     .multilineTextAlignment(.center)
-                    .padding()
-
-                Spacer()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
 
+            // Deck menu
             if showDeckMenu {
                 VStack(alignment: .leading, spacing: 15) {
                     ForEach(placeholderDecks, id: \.self) { deck in
@@ -79,11 +86,6 @@ struct ContentView: View {
                 .background(Color.gray)
                 .frame(maxWidth: 200, alignment: .leading)
                 .position(x: 105, y: 115)
-            }
-        }
-        .onTapGesture {
-            withAnimation {
-                isFlipped.toggle()
             }
         }
     }
